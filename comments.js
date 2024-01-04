@@ -1,69 +1,34 @@
 // Create a web server
-// 1) create a web server
-// 2) listen on a port
-// 3) handle requests
-// 4) return a response
-const http = require('http');
-const fs = require('fs');
-const url = require('url');
-const port = process.env.PORT || 3000;
+// Run: node comments.js
+// Test: curl -X POST -d "name=John&comment=Hello" http://localhost:3000/comments
+//       curl http://localhost:3000/comments
+//       curl -X DELETE http://localhost:3000/comments/0
+//       curl http://localhost:3000/comments
 
-function renderHTML(path, res) {
-    fs.readFile(path, null, function (error, data) {
-        if (error) {
-            res.writeHead(404);
-            res.write('File not found');
-        } else {
-            res.write(data);
-        }
-        res.end();
-    });
-}
+var express = require('express');
+var bodyParser = require('body-parser');
+var app = express();
 
-function renderCommentsList(comments, res) {
-    res.writeHead(200, {'Content-Type': 'application/json'});
-    res.write(JSON.stringify(comments));
-    res.end();
-}
+var comments = [];
 
-function renderComment(comment, res) {
-    res.writeHead(200, {'Content-Type': 'application/json'});
-    res.write(JSON.stringify(comment));
-    res.end();
-}
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
-function addComment(comment, res) {
-    res.writeHead(200, {'Content-Type': 'application/json'});
-    res.write(JSON.stringify(comment));
-    res.end();
-}
-
-const server = http.createServer(function (req, res) {
-    const path = url.parse(req.url).pathname;
-    switch (req.method) {
-        case 'GET':
-            if (path === '/comments') {
-                renderCommentsList(comments, res);
-            } else if (path === '/') {
-                renderHTML('./index.html', res);
-            } else if (path === '/create') {
-                renderHTML('./create.html', res);
-            } else if (path === '/comment') {
-                renderComment(comment, res);
-            } else {
-                renderHTML('./404.html', res);
-            }
-            break;
-        case 'POST':
-            if (path === '/comment') {
-                addComment(comment, res);
-            }
-            break;
-        default:
-            renderHTML('./404.html', res);
-            break;
-    }
+app.post('/comments', function(req, res) {
+  var name = req.body.name;
+  var comment = req.body.comment;
+  comments.push({ name: name, comment: comment });
+  res.end('Success');
 });
 
-server.listen(port);
-console.log('Server running at http://localhost:' + port + '/');
+app.get('/comments', function(req, res) {
+  res.json(comments);
+});
+
+app.delete('/comments/:index', function(req, res) {
+  var index = req.params.index;
+  comments.splice(index, 1);
+  res.end('Success');
+});
+
+app.listen(3000);
