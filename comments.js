@@ -1,4 +1,4 @@
-// Create a web server
+// Create web server
 // Run: node comments.js
 // Test: curl -X POST -d "name=John&comment=Hello" http://localhost:3000/comments
 //       curl http://localhost:3000/comments
